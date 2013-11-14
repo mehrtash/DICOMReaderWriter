@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Examples</category>
+  <title>DICOM Reader Writer</title>
+  <description><![CDATA[]]></description>
+  <version>0.1.0.$Revision$</version>
+  <documentation-url>http://wiki.slicer.org/slicerWiki</documentation-url>
+  <license/>
+  <contributor>Alireza Mehrtash (BWH)</contributor>
+  <acknowledgements><![CDATA[This work is part of the National Alliance for Medical Image Computing (NAMIC), funded by the National Institutes of Health through the NIH Roadmap for Medical Research, Grant U54 EB005149.]]></acknowledgements>
+  <parameters>
+    <label>IO</label>
+    <description><![CDATA[Input/output parameters]]></description>
+    <directory>
+      <name>inputDirectory</name>
+      <longflag>--inputDirectory</longflag>
+      <description><![CDATA[The input directory of DICOM series.]]></description>
+      <label>Input DICOM Directory</label>
+      <default>./</default>
+    </directory>
+    <directory>
+    <name>outputDirectory</name>
+    <longflag>--outputDirectory</longflag>
+    <description><![CDATA[The output directory to contain the DICOM series.]]></description>
+    <label>Output DICOM Directory</label>
+    <default>./</default>
+    </directory>
+    <image>
+      <name>outputVolume</name>
+      <label>Output Volume</label>
+      <channel>output</channel>
+      <index>0</index>
+      <description><![CDATA[Input volume]]></description>
+    </image>
+    <string-enumeration>
+      <name>ioType</name>
+      <description><![CDATA[Type of transform to produce]]></description>
+      <label>I/O Type</label>
+      <longflag>ioType</longflag>
+      <element>GDCM</element>
+      <element>DCMTK</element>
+      <default>GDCM</default>
+    </string-enumeration>
+  </parameters>
+</executable>
