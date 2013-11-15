@@ -11,6 +11,8 @@
 #include "itkExtractImageFilter.h"
 #include "itkShiftScaleImageFilter.h"
 #include "itkGDCMImageIO.h"
+#include "itkDCMTKImageIO.h"
+#include "itkDCMTKSeriesFileNames.h"
 #include "itkMetaDataObject.h"
 #include "itkGDCMSeriesFileNames.h"
 #include "itkNumericSeriesFileNames.h"
@@ -22,7 +24,6 @@
 namespace
 {
 
-
 }
 
 int main(int argc, char* argv[])
@@ -32,62 +33,72 @@ int main(int argc, char* argv[])
   typedef itk::Image<short,3>                  ImageType;
   typedef itk::ImageSeriesReader< ImageType >  ReaderType;
 
-  typedef itk::GDCMImageIO                        ImageIOType;
-  typedef itk::GDCMSeriesFileNames                NamesGeneratorType;
-
-  typedef itk::Image<ImageType, 3>         Image3DType;
-  typedef itk::Image<ImageType, 2>         Image2DType;
-
-  //typedef itk::ImageFileWriter<Image2DType>     WriterType;
+  typedef itk::GDCMImageIO            gdcmIOType;
+  typedef itk::DCMTKImageIO           dcmtkIOType;        
+  typedef itk::GDCMSeriesFileNames    gdcmNamesGeneratorType;
+  typedef itk::DCMTKSeriesFileNames   dcmtkNamesGeneratorType;
 
   typedef itk::ImageFileWriter< ImageType > WriterType;
-
+  
+  ReaderType::Pointer reader = ReaderType::New();
   WriterType::Pointer writer = WriterType::New();
 
-  ImageIOType::Pointer gdcmIO = ImageIOType::New();
+  if( ioType == "GDCM" )
+  {
+    gdcmIOType::Pointer gdcmIO = gdcmIOType::New();
+    gdcmNamesGeneratorType::Pointer gdcmNamesGenerator = gdcmNamesGeneratorType::New();
+    gdcmNamesGenerator->SetInputDirectory( inputDirectory );
+  
+    const ReaderType::FileNamesContainer & filenames =
+                            gdcmNamesGenerator->GetInputFileNames();
 
-  // Reading the input DICOCM directory and get the
-  // attribute values which needs to be copied to the
-  //output DICOM directory
-
-  NamesGeneratorType::Pointer namesGenerator = NamesGeneratorType::New();
-  namesGenerator->SetInputDirectory( inputDirectory );
-
-  const ReaderType::FileNamesContainer & filenames =
-                            namesGenerator->GetInputFileNames();
-
-  ReaderType::Pointer reader = ReaderType::New();
-
-  reader->SetImageIO( gdcmIO );
-  reader->SetFileNames( filenames );
-
-  try
+    reader->SetImageIO( gdcmIO );
+    reader->SetFileNames( filenames );
+    try
     {
-    reader->Update();
+      reader->Update();
     }
-
-  catch (itk::ExceptionObject &excp)
+    catch (itk::ExceptionObject &excp)
     {
-    std::cerr << "Exception thrown while writing the image" << std::endl;
-    std::cerr << excp << std::endl;
-    return EXIT_FAILURE;
+      std::cerr << "Exception thrown while writing the image" << std::endl;
+      std::cerr << excp << std::endl;
+      return EXIT_FAILURE;
     }
+  }
+  else //DCMTK
+  {
+    dcmtkIOType::Pointer dcmtkIO = dcmtkIOType::New();
+    dcmtkNamesGeneratorType::Pointer dcmtkNamesGenerator = dcmtkNamesGeneratorType::New();
+    dcmtkNamesGenerator->SetInputDirectory( inputDirectory );
+  
+    const ReaderType::FileNamesContainer & filenames =
+                            dcmtkNamesGenerator->GetInputFileNames();
 
-    writer->SetFileName( outputVolume.c_str() );
-
-    writer->SetInput( reader->GetOutput() );
+    reader->SetImageIO( dcmtkIO );
+    reader->SetFileNames( filenames );
 
     try
-      {
+    {
+      reader->Update();
+    }
+    catch (itk::ExceptionObject &excp)
+    {
+      std::cerr << "Exception thrown while writing the image" << std::endl;
+      std::cerr << excp << std::endl;
+      return EXIT_FAILURE;
+    }
+  }
+
+    writer->SetFileName( outputVolume.c_str() );
+    writer->SetInput( reader->GetOutput() );
+    try
+    {
       writer->Update();
-      }
+    }
     catch (itk::ExceptionObject &ex)
-      {
+    {
       std::cout << ex;
       return EXIT_FAILURE;
-      }
-
-
-
+    }
   return EXIT_SUCCESS;
 }
